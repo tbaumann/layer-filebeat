@@ -39,6 +39,10 @@ options:
     type: string
     default: ""
     description: "Expert setting topics filter. https://www.elastic.co/guide/en/beats/filebeat/master/kafka-output.html#_literal_topics_literal"
+  kafka_version:
+    type: string
+    default: ""
+    description: "Expert setting kafka version. https://www.elastic.co/guide/en/beats/filebeat/master/kafka-output.html#_literal_version_literal"
   harvester_buffer_size:
     type: int
     default: 16384

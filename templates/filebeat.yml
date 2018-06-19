@@ -105,6 +105,9 @@ output:
     topics:
 {{kafka_topics|indent(width=6, indentfirst=true)}}
     {% endif %}
+    {%- if kafka_version %}
+    version: "{{kafka_version}}"
+    {%- endif %}
 {% endif %}
 {% if juju_principal_unit -%}
 name: {{ juju_principal_unit }}
