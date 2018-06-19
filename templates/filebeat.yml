@@ -65,6 +65,5 @@ output:
     {% endif %}
 {% endif -%}
 {% if principal_unit %}
-shipper:
-  name: {{ principal_unit }}
+name: {{ principal_unit }}
 {% endif %}
