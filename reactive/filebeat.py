@@ -7,11 +7,12 @@ from charms.reactive import remove_state
 from charms.reactive import hook
 from charms.reactive.helpers import data_changed
 from charms.templating.jinja2 import render
+from charms.reactive.flags import any_flags_set
 
 from charmhelpers.core import unitdata
 from charmhelpers.core.hookenv import config
 from charmhelpers.core.host import restart_on_change, service_stop
-from charmhelpers.core.host import file_hash, service
+from charmhelpers.core.host import file_hash, service, service_running
 
 from elasticbeats import (
     enable_beat_on_boot,
@@ -29,6 +30,15 @@ import time
 FILEBEAT_CONFIG = '/etc/filebeat/filebeat.yml'
 LOGSTASH_SSL_CERT = '/etc/ssl/certs/filebeat-logstash.crt'
 LOGSTASH_SSL_KEY = '/etc/ssl/private/filebeat-logstash.key'
+
+
+@hook("update-status")
+def send_status():
+    if any_flags_set('logstash.connected', 'elasticsearch.connected', 'kafka.ready'):
+        if service_running("filebeat"):
+            status.active("Filebeat ready.")
+        else:
+            status.blocked("Filebeat service not running.")
 
 
 @when_not('apt.installed.filebeat')
@@ -66,7 +76,7 @@ def render_filebeat_template():
     if connections:
         if cfg_original_hash != cfg_new_hash:
             service('restart', 'filebeat')
-        status.active('Filebeat ready.')
+        send_status()
     else:
         # NB: beat base layer will handle waiting status when not connected
         service('stop', 'filebeat')
@@ -125,7 +135,7 @@ def push_filebeat_index(elasticsearch):
         if push_beat_index(elasticsearch=host_string,
                            service='filebeat', fatal=False):
             set_state('filebeat.index.pushed')
-            status.active('Filebeat ready.')
+            send_status()
             break
         else:
             msg = "Attempt {} to push filebeat index failed (retrying)".format(i)
